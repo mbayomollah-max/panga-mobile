@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../auth/AuthContext';
-import PrimaryButton from '../components/ui/PrimaryButton';
+import IdPButton from '../components/ui/IdPButton';
 import type { RootStackParamList } from '../navigation/types';
 import { colors } from '../theme';
 
@@ -55,9 +55,10 @@ export default function LoginScreen({ navigation }: Props) {
           </View>
 
           <View style={styles.actions}>
-            <PrimaryButton
-              title={signingIn ? 'Connexion…' : 'Se connecter'}
+            <IdPButton
+              title={signingIn ? 'Connexion en cours…' : 'Se connecter avec Mbayo'}
               onPress={connect}
+              disabled={signingIn}
             />
             {signingIn ? (
               <ActivityIndicator

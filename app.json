@@ -1,9 +1,10 @@
 {
   "expo": {
-    "name": "panga-mobile",
+    "name": "Panga",
     "slug": "panga-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
+    "scheme": "panga",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {

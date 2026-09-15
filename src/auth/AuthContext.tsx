@@ -1,12 +1,18 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { Profile } from '../types';
-import { getProfile, getToken, signInWithMbayo, signOut as doSignOut } from './session';
+import {
+  getProfile,
+  getToken,
+  signInWithMbayo,
+  signOut as doSignOut,
+  type SignInResult,
+} from './session';
 
 interface AuthContextValue {
   profile: Profile | null;
   token: string | null;
   loading: boolean;
-  signIn: () => Promise<Profile | null>;
+  signIn: () => Promise<SignInResult>;
   signOut: () => Promise<void>;
 }
 
@@ -14,7 +20,7 @@ const AuthContext = createContext<AuthContextValue>({
   profile: null,
   token: null,
   loading: true,
-  signIn: async () => null,
+  signIn: async () => ({ profile: null, reason: 'cancelled' }),
   signOut: async () => {},
 });
 
@@ -48,12 +54,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async () => {
-    const prof = await signInWithMbayo();
-    if (prof) {
+    const result = await signInWithMbayo();
+    if (result.profile) {
       setToken(await getToken());
-      setProfile(prof);
+      setProfile(result.profile);
     }
-    return prof;
+    return result;
   };
 
   const signOut = async () => {

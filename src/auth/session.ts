@@ -7,6 +7,18 @@ import type { Profile } from '../types';
 const TOKEN_KEY = 'panga_access_token';
 const REDIRECT_PATH = 'auth';
 
+export type SignInReason =
+  | 'ok'
+  | 'cancelled'
+  | 'no_token'
+  | 'invalid_session'
+  | 'network';
+
+export interface SignInResult {
+  profile: Profile | null;
+  reason: SignInReason;
+}
+
 export async function getToken(): Promise<string | null> {
   return SecureStore.getItemAsync(TOKEN_KEY);
 }
@@ -23,7 +35,7 @@ export async function getProfile(token: string): Promise<Profile | null> {
   }
 }
 
-export async function signInWithMbayo(): Promise<Profile | null> {
+export async function signInWithMbayo(): Promise<SignInResult> {
   const returnTo = AuthSession.makeRedirectUri({
     scheme: 'panga',
     path: REDIRECT_PATH,
@@ -31,14 +43,22 @@ export async function signInWithMbayo(): Promise<Profile | null> {
   const authorizeUrl = `${API_BASE_URL}/v1/auth/mbayo?return_to=${encodeURIComponent(
     returnTo,
   )}`;
-  const result = await WebBrowser.openAuthSessionAsync(authorizeUrl, returnTo);
 
-  if (result.type !== 'success') return null;
+  let result: WebBrowser.WebBrowserAuthSessionResult;
+  try {
+    result = await WebBrowser.openAuthSessionAsync(authorizeUrl, returnTo);
+  } catch {
+    return { profile: null, reason: 'network' };
+  }
+
+  if (result.type !== 'success') return { profile: null, reason: 'cancelled' };
+
   const token = extractTokenFromUrl(result.url);
-  if (!token) return null;
+  if (!token) return { profile: null, reason: 'no_token' };
 
   await SecureStore.setItemAsync(TOKEN_KEY, token);
-  return getProfile(token);
+  const profile = await getProfile(token);
+  return { profile, reason: profile ? 'ok' : 'invalid_session' };
 }
 
 export async function signOut(): Promise<void> {
@@ -56,11 +76,14 @@ export async function signOut(): Promise<void> {
   await SecureStore.deleteItemAsync(TOKEN_KEY);
 }
 
+// Le jeton arrive dans la query (?) et le fragment (#) en double : sous
+// Android l'un ou l'autre peut être perdu au passage Custom Tab → app.
 function extractTokenFromUrl(url: string): string | null {
-  const match = /[#&]token=([^&]+)/.exec(url);
-  if (!match) return null;
+  const raw =
+    /(?:[?&]|#)token=([^&#]+)/.exec(url)?.[1] ?? null;
+  if (!raw || raw === 'undefined') return null;
   try {
-    return decodeURIComponent(match[1]);
+    return decodeURIComponent(raw);
   } catch {
     return null;
   }

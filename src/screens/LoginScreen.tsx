@@ -25,12 +25,19 @@ export default function LoginScreen({ navigation }: Props) {
     if (signingIn) return;
     setSigningIn(true);
     try {
-      const profile = await signIn();
-      if (profile) {
+      const result = await signIn();
+      if (result.profile) {
         navigation.navigate('Listings');
-      } else {
-        Alert.alert('Connexion annulée', 'Aucun compte détecté. Réessayez.');
+        return;
       }
+      const texts: Record<string, [string, string]> = {
+        cancelled: ['Connexion annulée', 'La page de connexion a été fermée. Réessayez.'],
+        no_token: ['Session non reçue', 'Après connexion Mbayo, la session n\'a pas été transmise à l\'app. Réessayez.'],
+        invalid_session: ['Session refusée', 'Le compte Mbayo n\'a pas pu être validé. Réessayez ou créez un compte.'],
+        network: ['Erreur réseau', 'Impossible de contacter le service de connexion.'],
+      };
+      const [title, message] = texts[result.reason] ?? ['Connexion annulée', 'Réessayez.'];
+      Alert.alert(title, message);
     } catch {
       Alert.alert('Erreur', 'Impossible de contacter le service de connexion.');
     } finally {

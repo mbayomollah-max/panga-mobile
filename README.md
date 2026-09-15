@@ -66,6 +66,18 @@ panga-mobile/
         └── ListingDetailScreen.tsx   # Fiche détaillée
 ```
 
+## Connexion (OAuth Mbayo)
+
+- Le backend (`panga-api`) gère le SSO : `GET /v1/auth/mbayo` redirige vers
+  l'IdP Mbayo, puis le callback redirige vers une cible de retour avec le jeton
+  dans le fragment `#token=...`.
+- L'app utilise `expo-auth-session` + `expo-web-browser` (in-app browser) et
+  stocke le jeton dans `expo-secure-store`.
+- Le `scheme` `panga` (app.json) permet le deep link `panga://auth` en build ;
+  en Expo Go le retour passe par `exp://<hôte>/--/auth`.
+- "Demander" (fiche logement) crée une vraie demande via `PUT /v1/card`
+  (garantie = `guarantee_reference`). Sans session → renvoi vers Login.
+
 ## Commandes utiles
 
 | Commande                  | Effet                                  |
@@ -77,6 +89,8 @@ panga-mobile/
 
 ## Étapes suivantes (plus tard)
 
-- Connexion utilisateur (OAuth Mbayo) pour de vraies demandes de location.
+- OAuth Mbayo **réellement fonctionnel** sur mobile : valider le flux dans Expo
+  Go puis, pour le `scheme` natif `panga://`, passer sur un build de
+  développement (`npx expo run:android` ou **EAS Build**).
 - Espace propriétaire : gérer ses logements (depuis l'API `/v1` authentifiée).
 - Générer un **APK** avec **EAS Build** (build cloud, sans Android Studio ni SDK local).

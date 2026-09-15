@@ -13,8 +13,9 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '../auth/AuthContext';
 import type { RootStackParamList } from '../navigation/types';
-import { fetchListing, formatPrix } from '../api';
+import { createRequest, fetchListing, formatPrix } from '../api';
 import Avatar from '../components/ui/Avatar';
 import Chip from '../components/ui/Chip';
 import { colors, gradients, radius, shadows } from '../theme';
@@ -24,9 +25,11 @@ type Props = NativeStackScreenProps<RootStackParamList, 'ListingDetail'>;
 
 export default function ListingDetailScreen({ navigation, route }: Props) {
   const { id } = route.params;
+  const { profile, token, signOut } = useAuth();
   const [listing, setListing] = useState<ListingDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [requesting, setRequesting] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -43,6 +46,47 @@ export default function ListingDetailScreen({ navigation, route }: Props) {
   useEffect(() => {
     load();
   }, [load]);
+
+  const onRequest = async () => {
+    if (!listing) return;
+    if (!profile || !token) {
+      Alert.alert(
+        'Connexion requise',
+        'Connectez-vous pour demander ce logement.',
+        [
+          { text: 'Annuler', style: 'cancel' },
+          { text: 'Se connecter', onPress: () => navigation.navigate('Login') },
+        ],
+      );
+      return;
+    }
+    setRequesting(true);
+    try {
+      const guarantee = listing.guarantee_reference ?? 0;
+      await createRequest(token, listing.housing_id, guarantee);
+      Alert.alert(
+        'Demande envoyée',
+        'Le bailleur a reçu votre demande. Il vous répondra dans son espace propriétaire.',
+        [{ text: 'OK', onPress: () => navigation.goBack() }],
+      );
+    } catch (e) {
+      if (e instanceof Error && e.message === 'session') {
+        await signOut();
+        Alert.alert(
+          'Session expirée',
+          'Reconnectez-vous pour continuer.',
+          [{ text: 'OK', onPress: () => navigation.navigate('Login') }],
+        );
+      } else {
+        Alert.alert(
+          'Erreur',
+          e instanceof Error ? e.message : 'La demande n\'a pas pu être enregistrée.',
+        );
+      }
+    } finally {
+      setRequesting(false);
+    }
+  };
 
   const mainImage = listing?.pictures?.[0]?.url ?? listing?.cover_url ?? null;
 
@@ -204,18 +248,20 @@ export default function ListingDetailScreen({ navigation, route }: Props) {
             <Text style={styles.actionPriceLabel}>garantie incluse</Text>
           </View>
           <TouchableOpacity
-            style={styles.actionButton}
+            style={[styles.actionButton, requesting && styles.actionButtonDisabled]}
             activeOpacity={0.9}
-            onPress={() =>
-              Alert.alert(
-                'Demande de location',
-                'La connexion avec votre compte sera ajoutée prochainement.',
-              )
-            }
+            onPress={onRequest}
+            disabled={requesting}
           >
             <LinearGradient colors={[...gradients.cta]} style={styles.actionGradient}>
-              <Text style={styles.actionButtonText}>Demander</Text>
-              <Ionicons name="arrow-forward" size={19} color={colors.white} />
+              {requesting ? (
+                <ActivityIndicator color={colors.white} />
+              ) : (
+                <Text style={styles.actionButtonText}>Demander</Text>
+              )}
+              {!requesting ? (
+                <Ionicons name="arrow-forward" size={19} color={colors.white} />
+              ) : null}
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -459,6 +505,9 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     overflow: 'hidden',
     ...(shadows.md as object),
+  },
+  actionButtonDisabled: {
+    opacity: 0.7,
   },
   actionGradient: {
     flexDirection: 'row',

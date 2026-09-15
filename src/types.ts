@@ -47,3 +47,14 @@ export interface ListingDetail extends PublicHousing {
   created_at?: string;
   updated_at?: string;
 }
+
+export interface Profile {
+  identity_id: string;
+  display_name: string;
+  avatar_url?: string;
+  verified: boolean;
+  rating: number;
+  review_count: number;
+  is_landlord: boolean;
+  created_at?: string;
+}

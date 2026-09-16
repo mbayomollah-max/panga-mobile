@@ -299,6 +299,7 @@ const styles = StyleSheet.create({
   },
   collage: {
     height: 190,
+    marginRight: 16,
   },
   imgMain: {
     position: 'absolute',

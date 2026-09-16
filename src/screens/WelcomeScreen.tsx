@@ -70,12 +70,6 @@ export default function WelcomeScreen({ navigation }: Props) {
             title="Se connecter"
             onPress={() => navigation.navigate('Login')}
           />
-          <View style={styles.signupRow}>
-            <Text style={styles.signupHint}>Nouveau sur Panga ?</Text>
-            <Pressable onPress={() => navigation.navigate('Login')} hitSlop={8}>
-              <Text style={styles.signupLink}>Créer un compte</Text>
-            </Pressable>
-          </View>
           <Text style={styles.legal}>
             En continuant, vous acceptez nos conditions d'utilisation et notre
             politique de confidentialité.
@@ -178,22 +172,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     marginBottom: 12,
-  },
-  signupRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 18,
-    gap: 6,
-  },
-  signupHint: {
-    fontSize: 15,
-    color: colors.textMuted,
-  },
-  signupLink: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: colors.primary,
   },
   legal: {
     marginTop: 24,

@@ -19,7 +19,7 @@ export default function WelcomeScreen({ navigation }: Props) {
             </View>
             <Text style={styles.brandName}>Panga</Text>
           </View>
-          <Pressable onPress={() => navigation.navigate('Login')} hitSlop={12}>
+          <Pressable onPress={() => navigation.navigate('Listings')} hitSlop={12}>
             <Text style={styles.skip}>Passer</Text>
           </Pressable>
         </View>

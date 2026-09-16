@@ -192,32 +192,38 @@ export default function WelcomeScreen({ navigation }: Props) {
             </Text>
             <View style={[styles.accentBar, { marginTop: sizes.barMt }]} />
           </Animated.View>
-
-          <Animated.View style={[styles.trustCard, { paddingVertical: trustDims.padV }, enter(3)]}>
-            {TRUST.map((t, i) => (
-              <Fragment key={t.label}>
-                {i > 0 && <View style={styles.trustDivider} />}
-                <View style={styles.trustCol}>
-                  <View
-                    style={[
-                      styles.trustBadge,
-                      { width: trustDims.badge, height: trustDims.badge },
-                    ]}
-                  >
-                    <Ionicons name={t.icon} size={trustDims.icon} color={colors.teal} />
-                  </View>
-                  <Text
-                    style={[styles.trustLabel, { fontSize: trustDims.label }]}
-                    numberOfLines={1}
-                    adjustsFontSizeToFit
-                  >
-                    {t.label}
-                  </Text>
-                </View>
-              </Fragment>
-            ))}
-          </Animated.View>
         </View>
+
+        <Animated.View
+          style={[
+            styles.trustCard,
+            { paddingVertical: trustDims.padV, marginTop: 16, marginBottom: 2 },
+            enter(3),
+          ]}
+        >
+          {TRUST.map((t, i) => (
+            <Fragment key={t.label}>
+              {i > 0 && <View style={styles.trustDivider} />}
+              <View style={styles.trustCol}>
+                <View
+                  style={[
+                    styles.trustBadge,
+                    { width: trustDims.badge, height: trustDims.badge },
+                  ]}
+                >
+                  <Ionicons name={t.icon} size={trustDims.icon} color={colors.teal} />
+                </View>
+                <Text
+                  style={[styles.trustLabel, { fontSize: trustDims.label }]}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                >
+                  {t.label}
+                </Text>
+              </View>
+            </Fragment>
+          ))}
+        </Animated.View>
 
         <Animated.View style={[styles.footer, enter(4)]}>
           <View style={styles.ctaGlow}>

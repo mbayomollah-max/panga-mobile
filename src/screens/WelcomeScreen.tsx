@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useEffect, useMemo, useRef } from 'react';
+import { Fragment, useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, Image, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import PrimaryButton from '../components/ui/PrimaryButton';
@@ -17,7 +17,7 @@ const COVERS = {
 } as const;
 
 const TRUST = [
-  { icon: 'shield-checkmark-outline', label: 'Voisinage vérifié' },
+  { icon: 'shield-checkmark-outline', label: 'Logement vérifié' },
   { icon: 'pricetag-outline', label: 'Prix négociable' },
   { icon: 'documents-outline', label: 'Contrat sécurisé' },
 ] as const;
@@ -62,6 +62,16 @@ export default function WelcomeScreen({ navigation }: Props) {
             trustFont: 10.5,
             legalMt: 18,
           },
+    [compact],
+  );
+
+  const trustDims = useMemo(
+    () => ({
+      badge: compact ? 30 : 36,
+      icon: compact ? 15 : 16,
+      padV: compact ? 10 : 13,
+      label: compact ? 10 : 11,
+    }),
     [compact],
   );
 
@@ -183,17 +193,28 @@ export default function WelcomeScreen({ navigation }: Props) {
             <View style={[styles.accentBar, { marginTop: sizes.barMt }]} />
           </Animated.View>
 
-          <Animated.View style={[styles.trust, enter(3)]}>
-            {TRUST.map((t) => (
-              <View
-                key={t.label}
-                style={[styles.trustPill, { paddingVertical: sizes.trustPadV }]}
-              >
-                <Ionicons name={t.icon} size={14} color={colors.teal} />
-                <Text style={[styles.trustLabel, { fontSize: sizes.trustFont }]}>
-                  {t.label}
-                </Text>
-              </View>
+          <Animated.View style={[styles.trustCard, { paddingVertical: trustDims.padV }, enter(3)]}>
+            {TRUST.map((t, i) => (
+              <Fragment key={t.label}>
+                {i > 0 && <View style={styles.trustDivider} />}
+                <View style={styles.trustCol}>
+                  <View
+                    style={[
+                      styles.trustBadge,
+                      { width: trustDims.badge, height: trustDims.badge },
+                    ]}
+                  >
+                    <Ionicons name={t.icon} size={trustDims.icon} color={colors.teal} />
+                  </View>
+                  <Text
+                    style={[styles.trustLabel, { fontSize: trustDims.label }]}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                  >
+                    {t.label}
+                  </Text>
+                </View>
+              </Fragment>
             ))}
           </Animated.View>
         </View>
@@ -328,25 +349,37 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     backgroundColor: colors.accent,
   },
-  trust: {
+  trustCard: {
     flexDirection: 'row',
-    gap: 8,
-  },
-  trustPill: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 5,
-    borderRadius: radius.pill,
+    borderRadius: radius.lg,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
+    paddingHorizontal: 6,
+    alignItems: 'center',
     ...shadows.sm,
   },
+  trustCol: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 6,
+  },
+  trustDivider: {
+    width: 1,
+    height: '58%',
+    backgroundColor: colors.border,
+  },
+  trustBadge: {
+    borderRadius: radius.pill,
+    backgroundColor: colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   trustLabel: {
-    fontWeight: '600',
+    fontWeight: '700',
     color: colors.textMuted,
+    textAlign: 'center',
+    paddingHorizontal: 2,
   },
   footer: {
     marginBottom: 14,

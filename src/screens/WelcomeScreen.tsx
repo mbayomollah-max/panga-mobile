@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
   },
   header: {
     marginTop: 14,
-    marginBottom: 18,
+    marginBottom: 30,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
   },
   collage: {
     height: 190,
-    marginRight: 16,
+    marginRight: 24,
   },
   imgMain: {
     position: 'absolute',

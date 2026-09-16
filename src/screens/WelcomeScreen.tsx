@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useEffect, useRef } from 'react';
-import { Animated, Easing, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useMemo, useRef } from 'react';
+import { Animated, Easing, Image, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import PrimaryButton from '../components/ui/PrimaryButton';
 import type { RootStackParamList } from '../navigation/types';
@@ -24,6 +24,46 @@ const TRUST = [
 
 export default function WelcomeScreen({ navigation }: Props) {
   const progress = useRef(new Animated.Value(0)).current;
+  // Tier compact : surfaces réduites sur petits écrans → aucun chevauchement
+  // possible du CTA avec les composants au-dessus (piliers de confiance, texte).
+  const { height } = useWindowDimensions();
+  const compact = height < 730;
+
+  const sizes = useMemo(
+    () =>
+      compact
+        ? {
+            collage: 158,
+            main: 130,
+            card: { w: 102, h: 78 },
+            gap: 20,
+            eyebrowMb: 6,
+            title: 35,
+            titleLine: 40,
+            subtitleMt: 10,
+            subtitleLine: 22,
+            barMt: 14,
+            trustPadV: 7,
+            trustFont: 9.5,
+            legalMt: 12,
+          }
+        : {
+            collage: 190,
+            main: 158,
+            card: { w: 122, h: 90 },
+            gap: 26,
+            eyebrowMb: 10,
+            title: 41,
+            titleLine: 46,
+            subtitleMt: 14,
+            subtitleLine: 24,
+            barMt: 20,
+            trustPadV: 9,
+            trustFont: 10.5,
+            legalMt: 18,
+          },
+    [compact],
+  );
 
   useEffect(() => {
     Animated.timing(progress, {
@@ -82,17 +122,35 @@ export default function WelcomeScreen({ navigation }: Props) {
           </Pressable>
         </Animated.View>
 
-        <View style={styles.center}>
-          <Animated.View style={[styles.collage, enter(1)]}>
-            <Image source={COVERS.main} style={styles.imgMain} resizeMode="cover" />
-            <View style={[styles.cardOver, styles.overLeft, shadows.md]}>
+        <View style={[styles.center, { gap: sizes.gap }]}>
+          <Animated.View style={[styles.collage, { height: sizes.collage }, enter(1)]}>
+            <Image
+              source={COVERS.main}
+              style={[styles.imgMain, { height: sizes.main }]}
+              resizeMode="cover"
+            />
+            <View
+              style={[
+                styles.cardOver,
+                styles.overLeft,
+                { width: sizes.card.w, height: sizes.card.h },
+                shadows.md,
+              ]}
+            >
               <Image
                 source={COVERS.cardVilla}
                 style={styles.imgOver}
                 resizeMode="cover"
               />
             </View>
-            <View style={[styles.cardOver, styles.overRight, shadows.md]}>
+            <View
+              style={[
+                styles.cardOver,
+                styles.overRight,
+                { width: sizes.card.w, height: sizes.card.h },
+                shadows.md,
+              ]}
+            >
               <Image
                 source={COVERS.cardInterior}
                 style={styles.imgOver}
@@ -102,22 +160,39 @@ export default function WelcomeScreen({ navigation }: Props) {
           </Animated.View>
 
           <Animated.View style={[styles.copy, enter(2)]}>
-            <Text style={styles.eyebrow}>RDC · Immobilier</Text>
-            <Text style={styles.title}>
+            <Text style={[styles.eyebrow, { marginBottom: sizes.eyebrowMb }]}>
+              RDC · Immobilier
+            </Text>
+            <Text
+              style={[
+                styles.title,
+                { fontSize: sizes.title, lineHeight: sizes.titleLine },
+              ]}
+            >
               Le logement{'\n'}
               <Text style={styles.accent}>plus simple.</Text>
             </Text>
-            <Text style={styles.subtitle}>
+            <Text
+              style={[
+                styles.subtitle,
+                { marginTop: sizes.subtitleMt, lineHeight: sizes.subtitleLine },
+              ]}
+            >
               Trouvez, louez et vivez mieux avec la plateforme immobilière congolaise.
             </Text>
-            <View style={styles.accentBar} />
+            <View style={[styles.accentBar, { marginTop: sizes.barMt }]} />
           </Animated.View>
 
           <Animated.View style={[styles.trust, enter(3)]}>
             {TRUST.map((t) => (
-              <View key={t.label} style={styles.trustPill}>
+              <View
+                key={t.label}
+                style={[styles.trustPill, { paddingVertical: sizes.trustPadV }]}
+              >
                 <Ionicons name={t.icon} size={14} color={colors.teal} />
-                <Text style={styles.trustLabel}>{t.label}</Text>
+                <Text style={[styles.trustLabel, { fontSize: sizes.trustFont }]}>
+                  {t.label}
+                </Text>
               </View>
             ))}
           </Animated.View>
@@ -130,7 +205,7 @@ export default function WelcomeScreen({ navigation }: Props) {
               onPress={() => navigation.navigate('Login')}
             />
           </View>
-          <Text style={styles.legal}>
+          <Text style={[styles.legal, { marginTop: sizes.legalMt }]}>
             En continuant, vous acceptez nos conditions d'utilisation et notre
             politique de confidentialité.
           </Text>
@@ -193,24 +268,20 @@ const styles = StyleSheet.create({
   center: {
     flex: 1,
     justifyContent: 'center',
-    gap: 30,
   },
   collage: {
-    height: 216,
+    height: 190,
   },
   imgMain: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: 180,
     borderRadius: radius.xl,
   },
   cardOver: {
     position: 'absolute',
     bottom: 0,
-    width: 128,
-    height: 96,
     borderRadius: radius.lg,
     borderWidth: 3,
     borderColor: colors.surface,
@@ -237,11 +308,8 @@ const styles = StyleSheet.create({
     letterSpacing: 1.4,
     textTransform: 'uppercase',
     color: colors.teal,
-    marginBottom: 10,
   },
   title: {
-    fontSize: 41,
-    lineHeight: 46,
     fontWeight: '900',
     letterSpacing: -1.9,
     color: colors.text,
@@ -250,14 +318,11 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
   subtitle: {
-    marginTop: 14,
     fontSize: 15.5,
-    lineHeight: 24,
     color: colors.textMuted,
     maxWidth: 320,
   },
   accentBar: {
-    marginTop: 20,
     width: 34,
     height: 4,
     borderRadius: radius.pill,
@@ -273,7 +338,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 5,
-    paddingVertical: 9,
     borderRadius: radius.pill,
     backgroundColor: colors.surface,
     borderWidth: 1,
@@ -281,7 +345,6 @@ const styles = StyleSheet.create({
     ...shadows.sm,
   },
   trustLabel: {
-    fontSize: 10.5,
     fontWeight: '600',
     color: colors.textMuted,
   },
@@ -293,7 +356,6 @@ const styles = StyleSheet.create({
     ...shadows.md,
   },
   legal: {
-    marginTop: 18,
     textAlign: 'center',
     fontSize: 11.5,
     lineHeight: 16,

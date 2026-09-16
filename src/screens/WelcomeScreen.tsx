@@ -1,12 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import PrimaryButton from '../components/ui/PrimaryButton';
 import type { RootStackParamList } from '../navigation/types';
-import { colors } from '../theme';
+import { colors, radius, shadows } from '../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Welcome'>;
+
+const COVERS = [
+  require('../../assets/immo/casa.jpg'),
+  require('../../assets/immo/villa.jpg'),
+  require('../../assets/immo/interieur.jpg'),
+] as const;
 
 export default function WelcomeScreen({ navigation }: Props) {
   return (
@@ -25,6 +31,31 @@ export default function WelcomeScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.center}>
+          <View style={styles.collage}>
+              <View style={[styles.colMain, styles.shadowSoft]}>
+                <Image
+                  source={COVERS[0]}
+                  style={styles.imgMain}
+                  resizeMode="cover"
+                />
+              </View>
+              <View style={styles.colSide}>
+                <View style={[styles.imgSideWrap, styles.shadowSoft]}>
+                  <Image
+                    source={COVERS[1]}
+                    style={styles.imgSide}
+                    resizeMode="cover"
+                  />
+                </View>
+                <View style={[styles.imgSideWrap, styles.shadowSoft]}>
+                  <Image
+                    source={COVERS[2]}
+                    style={styles.imgSide}
+                    resizeMode="cover"
+                  />
+                </View>
+              </View>
+            </View>
           <Text style={styles.title}>
             Le logement{'\n'}
             <Text style={styles.accent}>plus simple.</Text>
@@ -97,6 +128,37 @@ const styles = StyleSheet.create({
   center: {
     flex: 1,
     justifyContent: 'center',
+    gap: 26,
+  },
+  collage: {
+    flexDirection: 'row',
+    gap: 12,
+    height: 148,
+  },
+  colMain: {
+    flex: 1,
+    borderRadius: radius.lg,
+  },
+  colSide: {
+    width: '38%',
+    justifyContent: 'space-between',
+  },
+  imgMain: {
+    width: '100%',
+    height: '100%',
+    borderRadius: radius.lg,
+  },
+  imgSideWrap: {
+    height: '46%',
+    borderRadius: radius.lg,
+  },
+  imgSide: {
+    width: '100%',
+    height: '100%',
+    borderRadius: radius.lg,
+  },
+  shadowSoft: {
+    ...shadows.md,
   },
   title: {
     fontSize: 38,
